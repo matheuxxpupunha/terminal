@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terminal Interativo</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1e1e1e;
+            color: #00ff00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            width: 80%;
+            max-width: 800px;
+        }
+
+        .terminal {
+            background-color: #282c34;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border: 1px solid #00ff00;
+            text-align: left; /* Alinha o texto à esquerda */
+        }
+
+        textarea {
+            width: 100%;
+            height: 50px;
+            padding: 10px;
+            border: 1px solid #00ff00;
+            background-color: #282c34;
+            color: #00ff00;
+            border-radius: 5px;
+            resize: none; /* Impede o redimensionamento */
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 10px;
+            background-color: #00ff00;
+            border: none;
+            cursor: pointer;
+            color: #1e1e1e;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #00cc00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Terminal Interativo</h1>
+        <div class="terminal" id="output"></div>
+        <textarea id="command" placeholder="Digite seu comando..."></textarea>
+        <button id="execute">Executar</button>
+    </div>
+    <script>
+        const terminal = document.getElementById('output');
+        const commandInput = document.getElementById('command');
+
+        function executeCommand(command) {
+            fetch('/execute', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ command }),
+            })
+            .then(response => response.text())
+            .then(output => {
+                terminal.textContent += `> ${command}\n${output}\n`;
+                terminal.scrollTop = terminal.scrollHeight; // Rola para baixo
+            })
+            .catch(error => {
+                terminal.textContent += `> ${command}\nErro: ${error}\n`;
+                terminal.scrollTop = terminal.scrollHeight; // Rola para baixo
+            });
+            commandInput.value = ''; // Limpa o campo de entrada
+        }
+
+        document.getElementById('execute').addEventListener('click', () => {
+            const command = commandInput.value.trim();
+            if (command) {
+                executeCommand(command);
+            }
+        });
+
+        commandInput.addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                const command = commandInput.value.trim();
+                if (command) {
+                    executeCommand(command);
+                }
+                event.preventDefault(); // Evita a quebra de linha no textarea
+            }
+        });
+    </script>
+</body>
+</html>
